@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Ökonometria korrepetálás</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Belépő és tartalomjegyzék: a tananyagok arculatát követi. */
+:root {
+  --bg: #F3F5F8; --surface: #FFFFFF; --ink: #18202E; --muted: #586274; --line: #D8DDE6;
+  --accent: #2343A3; --accent-soft: #E4EAF8; --mark: #B97A06; --reject: #C0402B; --reject-soft: #F7DED8;
+  --f-display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --f-body: "Public Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0F131B; --surface: #161C27; --ink: #E5E9F1; --muted: #9AA3B4; --line: #2A3242; --accent: #8FA8F3; --accent-soft: #1E2944; --mark: #F0BA45; --reject: #EC7A64; --reject-soft: #3D211C; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 640px; margin: 0 auto; padding: max(40px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left)); display: grid; gap: 18px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-stretch: 78%; font-weight: 750; font-size: clamp(32px, 7vw, 46px); line-height: 1.04; margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+form { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+label { font-weight: 600; font-size: 14px; }
+input[type="password"] { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 100%; }
+button { font: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--surface); border-radius: 8px; padding: 10px 16px; font-weight: 600; }
+.btn:disabled { opacity: .6; cursor: progress; }
+.btn.ghost { background: transparent; color: var(--accent); padding: 6px 12px; font-size: 14px; }
+:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.err { background: var(--reject-soft); color: var(--ink); border-radius: 8px; padding: 8px 12px; font-size: 14.5px; }
+.cards { display: grid; gap: 10px; }
+.card { display: grid; gap: 2px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.card:hover { border-color: var(--accent); }
+.card b { font-family: var(--f-display); font-stretch: 85%; font-size: 20px; color: var(--accent); }
+.card span { font-size: 14px; color: var(--muted); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+.loading { color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="wrap" id="app" aria-live="polite">
+  <div class="eyebrow">BME GTK · Ökonometria · felkészülés az 1. dolgozatra</div>
+  <h1>Ökonometria korrepetálás</h1>
+  <p class="loading">Betöltés…</p>
+  <noscript><p class="err">Az oldalhoz JavaScript szükséges.</p></noscript>
+</main>
+<script src="config.js"></script>
+<script src="data/manifest.js"></script>
+<script>
+(function () {
+  'use strict';
+  var CFG = window.OKO_CONFIG || {};
+  var MAN = window.OKO_MANIFEST || { v: '0', pages: [] };
+  var STORE = 'oko-session';
+  var app = document.getElementById('app');
+  var params = new URLSearchParams(location.search);
+  var page = params.get('p');
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function getKey() {
+    try { var o = JSON.parse(localStorage.getItem(STORE) || 'null'); if (o && o.k && o.exp > Date.now()) return o.k; } catch (e) { /* ignore */ }
+    return null;
+  }
+  function setKey(k) {
+    var hours = Number(CFG.sessionHours) || 12;
+    try { localStorage.setItem(STORE, JSON.stringify({ k: k, exp: Date.now() + hours * 3600 * 1000 })); } catch (e) { /* ignore */ }
+    sessionKey = k;
+  }
+  function clearKey() { try { localStorage.removeItem(STORE); } catch (e) { /* ignore */ } sessionKey = null; }
+  var sessionKey = getKey();
+
+  function b64(s) { var bin = atob(s), out = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+  function loadPage(id) {
+    return new Promise(function (resolve, reject) {
+      if (window.OKO_ENC && window.OKO_ENC[id]) return resolve(window.OKO_ENC[id]);
+      var s = document.createElement('script');
+      s.src = 'data/' + encodeURIComponent(id) + '.enc.js?v=' + encodeURIComponent(MAN.v);
+      s.onload = function () { (window.OKO_ENC && window.OKO_ENC[id]) ? resolve(window.OKO_ENC[id]) : reject(new Error('missing')); };
+      s.onerror = function () { reject(new Error('load')); };
+      document.head.appendChild(s);
+    });
+  }
+  function decrypt(keyB64, blob) {
+    if (!window.crypto || !crypto.subtle) return Promise.reject(new Error('nocrypto'));
+    return crypto.subtle.importKey('raw', b64(keyB64), 'AES-GCM', false, ['decrypt']).then(function (key) {
+      return crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(blob.iv) }, key, b64(blob.ct));
+    }).then(function (buf) { return new TextDecoder().decode(buf); });
+  }
+
+  function header() {
+    return '<div class="eyebrow">BME GTK · Ökonometria · felkészülés az 1. dolgozatra</div><h1>Ökonometria korrepetálás</h1>';
+  }
+  function showLogin(msg) {
+    var notSet = !CFG.endpoint || /IDE_MASOLD/.test(CFG.endpoint);
+    app.innerHTML = header()
+      + '<p class="muted">A tananyagok jelszóval védettek. A jelszót a korrepetálás tartójától kapod.</p>'
+      + (notSet ? '<p class="err">Az oldal még nincs beállítva: a config.js fájlba be kell írni az Apps Script URL-jét.</p>' : '')
+      + (msg ? '<p class="err" role="alert">' + esc(msg) + '</p>' : '')
+      + '<form id="login" autocomplete="on"><label for="pw">Jelszó</label>'
+      + '<input type="password" id="pw" name="password" autocomplete="current-password" required>'
+      + '<button class="btn" type="submit" id="go">Belépés</button></form>';
+    var form = document.getElementById('login'), btn = document.getElementById('go'), pw = document.getElementById('pw');
+    pw.focus();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (notSet) return;
+      btn.disabled = true; btn.textContent = 'Ellenőrzés…';
+      fetch(CFG.endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ password: pw.value }) })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res || !res.ok) {
+            var m = { wrong_password: 'Hibás jelszó.', locked: 'Túl sok sikertelen próbálkozás. Próbáld újra 10 perc múlva.', not_configured: 'A jelszóellenőrző nincs beállítva (PASSWORD és CONTENT_KEY hiányzik).' };
+            throw new Error(m[res && res.error] || 'A belépés nem sikerült.');
+          }
+          var known = MAN.pages.some(function (p) { return p.id === page; });
+          var testId = known ? page : (MAN.pages[0] || {}).id;
+          return loadPage(testId).then(function (blob) { return decrypt(res.key, blob); })
+            .then(function () { setKey(res.key); route(); }, function () { throw new Error('A jelszó jó, de a kulcs nem illik a tartalomhoz. A CONTENT_KEY-t frissíteni kell.'); });
+        })
+        .catch(function (err) {
+          var msg = (err && err.message && !/Failed to fetch|NetworkError|Load failed|JSON/.test(err.message)) ? err.message : 'Nem érem el a jelszóellenőrzőt. Ellenőrizd az internetkapcsolatot, vagy próbáld később.';
+          showLogin(msg);
+        });
+    });
+  }
+  function showMenu() {
+    var cards = MAN.pages.map(function (p) {
+      return '<a class="card" href="index.html?p=' + encodeURIComponent(p.id) + '"><b>' + esc(p.title) + '</b><span>' + esc(p.desc || '') + '</span></a>';
+    }).join('');
+    app.innerHTML = header()
+      + '<p class="muted">Válaszd ki az anyagot. A válaszaidat és a haladásodat ez a böngésző megjegyzi.</p>'
+      + '<div class="cards">' + cards + '</div>'
+      + '<div class="row"><span class="muted" style="font-size:13px">Verzió: ' + esc(MAN.v) + '</span><button class="btn ghost" type="button" id="out">Kijelentkezés</button></div>';
+    document.getElementById('out').addEventListener('click', function () { clearKey(); showLogin(''); });
+  }
+  function render(id) {
+    app.innerHTML = header() + '<p class="loading">Az anyag betöltése…</p>';
+    loadPage(id).then(function (blob) { return decrypt(sessionKey, blob); }).then(function (html) {
+      document.open(); document.write(html); document.close();
+    }).catch(function (err) {
+      if (err && err.message === 'load') { app.innerHTML = header() + '<p class="err">Ez az anyag nem található.</p><p><a href="index.html">Vissza a tartalomjegyzékhez</a></p>'; return; }
+      if (err && err.message === 'nocrypto') { app.innerHTML = header() + '<p class="err">Ez a böngésző nem tudja visszafejteni az anyagot. Nyisd meg egy friss Chrome, Edge, Firefox vagy Safari böngészőben.</p>'; return; }
+      clearKey(); showLogin('A belépés lejárt vagy a jelszó megváltozott. Lépj be újra.');
+    });
+  }
+  function route() {
+    if (!sessionKey) return showLogin('');
+    var known = MAN.pages.some(function (p) { return p.id === page; });
+    if (page && known) return render(page);
+    showMenu();
+  }
+  route();
+})();
+</script>
+</body>
+</html>
